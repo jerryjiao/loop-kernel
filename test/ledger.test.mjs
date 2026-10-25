@@ -260,6 +260,73 @@ test("CLI pending：打印待拍题 JSON（没拍的原样列出、已拍的不�
     process.stdout.write = origWrite;
   }
   assert.deepEqual(pending.map((r) => r.id), ["F1"]);
-  assert.equal(pending[0].irreversible, false); // CLI 不传名单：谁都不标不可逆
+  assert.equal(pending[0].irreversible, false); // 不传 config：谁都不标不可逆
   assert.equal(readFileSync(file, "utf-8").trim().split("\n").length, 3); // 只读
+});
+
+test("CLI 读循环配置：pending 认 neverDefaultCategories，add 走 ledgerRows 校验", async () => {
+  const root = mkdtempSync(join(tmpdir(), "loop-kernel-ledger-cli-"));
+  tempDirs.push(root);
+  mkdirSync(join(root, "loop"));
+  writeFileSync(
+    join(root, "loop.config.mjs"),
+    `export default {
+      loopHome: ${JSON.stringify(join(root, "home"))},
+      launchdPrefix: "com.example.testloop",
+      shifts: { plan: { name: "规划班", timeLimitMin: 120, alwaysRun: true } },
+      orderTypes: [],
+      neverDefaultCategories: ["判死"],
+      ledgerRows: { question: (row) => (row.text ? null : "question 行缺 text") },
+      prompt: () => "干活",
+      executor: { run: async () => ({}) },
+    };\n`,
+  );
+  const ledgerFile = join(root, "loop", "ledger.jsonl");
+  writeFileSync(
+    ledgerFile,
+    `${JSON.stringify({
+      date: "2026-10-15",
+      type: "question",
+      id: "D1",
+      category: "判死",
+      recommend: "判死",
+      options: ["判死", "再观察"],
+      text: "要不要判死",
+    })}\n`,
+  );
+  // cwd 不是 root：launchd 的 WorkingDirectory 是 home，得靠 LOOP_CWD 找到配置
+  const env = { ...process.env, LOOP_CWD: root };
+  const run = (args) =>
+    new Promise((resolve) => {
+      const child = spawn(process.execPath, [LEDGER_MJS, ...args], {
+        cwd: tmpdir(),
+        env,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (c) => {
+        stdout += c;
+      });
+      child.stderr.on("data", (c) => {
+        stderr += c;
+      });
+      child.on("close", (code) => resolve({ code, stdout, stderr }));
+    });
+
+  const pending = await run(["pending"]);
+  assert.equal(pending.code, 0, pending.stderr);
+  const rows = JSON.parse(pending.stdout);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].neverDefault, true);
+  assert.equal(rows[0].irreversible, true);
+
+  const before = readFileSync(ledgerFile, "utf-8");
+  const rejected = await run([
+    "add",
+    JSON.stringify({ date: "2026-10-15", type: "question", id: "D2", category: "普通", options: ["过", "否"] }),
+  ]);
+  assert.equal(rejected.code, 1);
+  assert.match(rejected.stderr, /question 行缺 text/);
+  assert.equal(readFileSync(ledgerFile, "utf-8"), before);
 });

@@ -8,7 +8,7 @@
 //        48 小时默认从它起算
 //   {"date","type":"decision","trial","question","choice","source":"reply|default|workbench","supersedes"?}
 //     —— 改判：对同一题号再记一行 decision 即生效（账本靠后者为准）；supersedes 记被替换行，只作记录
-// 用法（CLI，账本默认 <cwd>/loop/ledger.jsonl）：
+// 用法（CLI，root = LOOP_CWD ?? cwd，账本 <root>/loop/ledger.jsonl，规则来自 loop.config.mjs）：
 //   node src/ledger.mjs add '{"date":"2026-10-15","type":"delivery",...}'
 //   node src/ledger.mjs recent --days 7 [--type delivery]
 //   node src/ledger.mjs pending   （待拍题 JSON：pendingQuestions 输出，只读）
@@ -17,6 +17,7 @@ import { appendFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { loadConfig } from "./config.mjs";
 import { addDaysStr, localDate } from "./dates.mjs";
 import { withDirLock } from "./dir-lock.mjs";
 
@@ -142,8 +143,8 @@ export function emptyStreak(rows, dateStr, { loopRowTypes = ["delivery", "decisi
   return streak;
 }
 
-/** CLI 入口。ledgerFile 必传（测试与循环脚本注入）。 */
-export async function main(argv, { ledgerFile } = {}) {
+/** CLI 入口。ledgerFile 必传（测试与循环脚本注入）。config 带 ledgerRows 与 neverDefaultCategories。 */
+export async function main(argv, { ledgerFile, config } = {}) {
   const [cmd, ...rest] = argv;
   if (!ledgerFile) {
     process.stderr.write("ledger 需要账本路径：main(argv, { ledgerFile })\n");
@@ -152,7 +153,7 @@ export async function main(argv, { ledgerFile } = {}) {
   }
   if (cmd === "add") {
     try {
-      addLedgerRow(ledgerFile, JSON.parse(rest[0] ?? ""));
+      addLedgerRow(ledgerFile, JSON.parse(rest[0] ?? ""), { validators: config?.ledgerRows ?? {} });
     } catch (error) {
       process.stderr.write(`ledger add 失败: ${error?.message ?? error}\n`);
       process.exitCode = 1;
@@ -170,7 +171,8 @@ export async function main(argv, { ledgerFile } = {}) {
     return;
   }
   if (cmd === "pending") {
-    process.stdout.write(`${JSON.stringify(pendingQuestions(loadLedger(ledgerFile)), null, 2)}\n`);
+    const neverDefaultCategories = config?.neverDefaultCategories ?? [];
+    process.stdout.write(`${JSON.stringify(pendingQuestions(loadLedger(ledgerFile), { neverDefaultCategories }), null, 2)}\n`);
     return;
   }
   process.stderr.write("用法: ledger add <json> | recent --days N [--type T] | pending\n");
@@ -178,5 +180,7 @@ export async function main(argv, { ledgerFile } = {}) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await main(process.argv.slice(2), { ledgerFile: join(process.cwd(), "loop", "ledger.jsonl") });
+  const root = process.env.LOOP_CWD ?? process.cwd();
+  const config = await loadConfig(root);
+  await main(process.argv.slice(2), { ledgerFile: join(root, "loop", "ledger.jsonl"), config });
 }

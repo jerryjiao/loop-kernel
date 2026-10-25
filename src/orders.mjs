@@ -642,5 +642,5 @@ export async function main(argv, deps = {}) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await main(process.argv.slice(2));
+  await main(process.argv.slice(2), { root: process.env.LOOP_CWD ?? process.cwd() });
 }
