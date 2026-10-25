@@ -1,4 +1,4 @@
-// 单框架唯一写入口：班/力工只能经 `node src/orders.mjs <cmd>` 改单，手改
+// 单框架唯一写入口：班/执行者只能经 `node src/orders.mjs <cmd>` 改单，手改
 // loop/days/<圈日>/orders.jsonl 一律不算数。规矩在这里由脚本强制：七阶段迁移、
 // 防重复硬闸、每日/每周上限（跨 7 个圈日回看）、开关文件、搜索预算（全天 ≤30 次）、
 // 额度底线；单型注册表由循环在 loop.config.mjs 的 orderTypes 里注入（order-types.mjs
