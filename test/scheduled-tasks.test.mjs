@@ -47,7 +47,7 @@ const REGISTRY = {
       id: "money-loop",
       name: "赚钱循环",
       runbook: "loop/shift.md",
-      executor: "Claude Code · GLM",
+      executor: "Claude Code",
       schedule: {
         slots: [
           { shift: "05", name: "规划班", hour: 2 },
@@ -61,14 +61,14 @@ const REGISTRY = {
       id: "friday",
       name: "每周回顾",
       runbook: "loop/friday.md",
-      executor: "Claude Code · GLM",
+      executor: "Claude Code",
       schedule: { weekday: 5, slots: [{ shift: "friday", name: "每周回顾", hour: 17 }] },
     },
     {
       id: "xsync",
       name: "X 收藏同步",
       runbook: "skills/x-bookmarks-sync/RUNBOOK.md",
-      executor: "Claude Code · GLM",
+      executor: "Claude Code",
       schedule: { slots: [{ shift: "xsync", name: "X 收藏同步", hour: 1 }] },
     },
   ],
@@ -88,7 +88,7 @@ function baseTask(over = {}) {
     id: "alpha",
     name: "甲",
     runbook: "loop/shift.md",
-    executor: "Claude Code · GLM",
+    executor: "Claude Code",
     schedule: { slots: [{ shift: "05", name: "规划班", hour: 2 }] },
     ...over,
   };

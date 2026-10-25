@@ -19,6 +19,7 @@ const FIELD_KINDS = [
   ["timezone", "string", false],
   ["loopHome", "string", true],
   ["launchdPrefix", "string", true],
+  ["extraPath", "array", false],
   ["shifts", "object", true],
   ["by", "array", false],
   ["orderTypes", "array", true],
@@ -69,6 +70,7 @@ export async function loadConfig(root) {
     timezone: getTimezone(), // 默认时区只在 dates.mjs 存一份
     by: ["shift", "manual"],
     ledgerRows: {},
+    extraPath: ["/opt/homebrew/bin", "/usr/local/bin"],
     ...cfg,
   };
   setTimezone(config.timezone);

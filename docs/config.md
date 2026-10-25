@@ -19,7 +19,8 @@
 | `timezone` | 否 | `"Asia/Shanghai"` | 圈日按这个时区算 |
 | `loopHome` | 是 | — | 本机状态目录（班锁、日志、任务停用标记），每个循环各用各的 |
 | `launchdPrefix` | 是 | — | launchd label 前缀，如 `"com.example.loop"` |
-| `shifts` | 是 | — | `{ <班编号>: { name, timeLimitMin, alwaysRun } }`；`alwaysRun:false` = 有单才起 |
+| `extraPath` | 否 | `["/opt/homebrew/bin","/usr/local/bin"]` | launchd 里给会话用的额外 PATH（拼在 node 所在目录之后、系统路径之前） |
+| `shifts` | 是 | — | `{ <班编号>: { name, timeLimitMin, alwaysRun } }`；`alwaysRun:false` = 有单才起；登记表里出现的每个班编号都必须在 shifts 里 |
 | `by` | 否 | `["shift","manual"]` | 单的处理人取值 |
 | `orderTypes` | 是 | — | 单型登记数组（字段见 order-types.mjs） |
 | `ledgerRows` | 否 | `{}` | `{ <行类型>: (row) => 问题字符串或 null }`，各循环自己的账本行校验 |

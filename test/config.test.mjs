@@ -50,6 +50,7 @@ test("loadConfig 补默认值、冻结，timezone 落到 dates", async () => {
   assert.equal(config.timezone, "Asia/Shanghai");
   assert.deepEqual(config.by, ["shift", "manual"]);
   assert.deepEqual(config.ledgerRows, {});
+  assert.deepEqual(config.extraPath, ["/opt/homebrew/bin", "/usr/local/bin"]);
   assert.equal(Object.isFrozen(config), true);
   assert.equal(getTimezone(), "Asia/Shanghai");
 });
