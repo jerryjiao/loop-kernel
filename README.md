@@ -22,6 +22,10 @@
 | `dates` | 圈日（时区可配） |
 | `scheduled-tasks` | 定时任务登记表、判班 |
 | `config` | 加载并校验 loop.config.mjs |
+| `ledger` | 账本：JSONL 追加与读、拍板题/拍板行、空转 |
+| `order-types` | 单型注册表（createRegistry/validateRegistry、内置拍板单型） |
+| `orders` | 单：七阶段、防重复、上限、开关、搜索预算、next |
+| `decision-sync` | 账本拍板 ↔ 拍板单同步 |
 
 ## 谁能改
 

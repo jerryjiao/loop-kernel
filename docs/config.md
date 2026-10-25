@@ -28,6 +28,11 @@
 | `beforeShift` | 否 | 无 | `async ({ root, shift, log }) => void`，拿到锁后、起会话前 |
 | `afterShift` | 否 | 无 | `async ({ root, shift, log, result }) => void`，班记录写完后 |
 | `notify` | 否 | 无 | `async (text) => void`，推送简报等 |
+| `quotaFn` | 否 | 放行 `() => "ok"` | `(单草稿) => 字符串或 null`，null = 没额度不领 |
+| `shiftOf` | 否 | 无（记 `manual`） | `(date) => 班编号`，没有 `LOOP_SHIFT` 时用来推当前班 |
+| `suggestExtras` | 否 | `{}` | 对象，展开进单型 `suggestable` 的参数（循环补自家材料） |
+| `neverDefaultCategories` | 否 | `[]` | 这些 category 的拍板题永不按推荐默认（`ledger.pendingQuestions` / `decision-sync`） |
+| `loopRowTypes` | 否 | `["delivery","decision"]` | 空转计数（`ledger.emptyStreak`）的下界行类型 |
 
 ## 最小示例
 

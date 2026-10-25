@@ -5,7 +5,7 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { setTimezone } from "./dates.mjs";
+import { getTimezone, setTimezone } from "./dates.mjs";
 
 const KIND_CHECK = {
   string: (v) => typeof v === "string",
@@ -66,7 +66,7 @@ export async function loadConfig(root) {
   if (problems.length > 0) throw new Error(`loop.config.mjs 不合格：\n${problems.join("\n")}`);
   const config = {
     root,
-    timezone: "Asia/Shanghai",
+    timezone: getTimezone(), // 默认时区只在 dates.mjs 存一份
     by: ["shift", "manual"],
     ledgerRows: {},
     ...cfg,
