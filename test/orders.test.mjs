@@ -25,6 +25,7 @@ import {
   withDayLock,
 } from "../src/orders.mjs";
 import { addLedgerRow } from "../src/ledger.mjs";
+import { createRegistry, validateRegistry } from "../src/order-types.mjs";
 import { testConfig, writeConfigFile } from "./helpers.mjs";
 
 const tempDirs = [];
@@ -86,6 +87,17 @@ test("makeCtx：路径从 config.root 推、注册表组好、quotaFn 默认放�
   const over = kernelMakeCtx(testConfig(), { daysDir: "/d", quotaFn: () => null });
   assert.equal(over.daysDir, "/d");
   assert.equal(over.quotaFn({}), null);
+});
+
+test("最小单型（只有 id/label/priority/dedupe/verify）能过校验、能开单", () => {
+  const apply = { id: "apply", label: "投递", priority: 10, deliverable: true, dedupe: (d) => `apply:${d.day}:${d.title}`, verify: "验收指针" };
+  const registry = createRegistry({ orderTypes: [apply], shifts: { dawn: { name: "早班" } }, by: ["shift", "manual"] });
+  assert.deepEqual(validateRegistry(registry), []);
+  assert.equal(registry.getType("apply").center, null);
+  const ctx = makeCtx({ config: testConfig({ orderTypes: [apply] }) });
+  const opened = openOrder(ctx, { type: "apply", title: "投一封" });
+  assert.equal(opened.phase, "todo");
+  assert.equal(opened.type, "apply");
 });
 
 test("七阶段合法迁移：open→start→needs_you→resume→done、open→queue→start→done、直接 done/fail/close、open→needs_you", () => {

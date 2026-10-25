@@ -21,7 +21,7 @@ export const byDay = (prefix) => (draft) => `${prefix}:${draft.day}`;
 
 // 注册表统一补默认值与开关路径（switch 只是声明，真正的开关检查在 orders.mjs 按 id 找文件）；
 // 声明里 switch 为 null 的人工关卡类保持 null，不落 .off 路径。
-const DEFAULTS = { shifts: "any", deliverable: false, ledgerRow: null, caps: {}, search: 0, quota: "support", selfStart: false };
+const DEFAULTS = { shifts: "any", deliverable: false, ledgerRow: null, center: null, caps: {}, search: 0, quota: "support", selfStart: false };
 
 /** 组注册表：types 补默认值；shiftIds = 循环声明的班编号 + "manual"；shiftName 给显示用
  *  班名；by = 单的处理人取值清单（openOrder 校验用）。 */

@@ -16,6 +16,7 @@ test("createRegistry：补默认值、switch 默认路径（声明 null 保留�
   assert.equal(alpha.shifts, "any");
   assert.equal(alpha.deliverable, false);
   assert.equal(alpha.ledgerRow, null);
+  assert.equal(alpha.center, null, "不写 center 默认 null，不挡开单");
   assert.deepEqual(alpha.caps, {});
   assert.equal(alpha.search, 0);
   assert.equal(alpha.quota, "support");

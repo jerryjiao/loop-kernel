@@ -187,7 +187,11 @@ export async function loopStatus(deps = {}) {
       nextFire: fire ? `${ymd(fire)} ${pad(fire.getHours())}:${pad(fire.getMinutes())}` : null,
     });
   }
-  return { agents, lastShift: lastShiftRow(d.config.root, { now: d.now }) };
+  return {
+    agents,
+    lastShift: lastShiftRow(d.config.root, { now: d.now }),
+    shiftName: (id) => d.config.shifts?.[id]?.name ?? id,
+  };
 }
 
 /** CLI 入口：从 cwd 读配置。返回退出码（0 成功），便于测试断言与 shell 使用。 */
@@ -211,7 +215,7 @@ export async function main(argv, deps = {}) {
         );
       }
       (deps.logFn ?? ((...args) => console.log(...args)))(
-        `最近一班：${s.lastShift ? `${s.lastShift.shift} 班 ${s.lastShift.start} exit=${s.lastShift.exit}${s.lastShift.skipped ? ` skipped=${s.lastShift.skipped}` : ""}` : "无记录"}`,
+        `最近一班：${s.lastShift ? `${s.shiftName(s.lastShift.shift)} ${s.lastShift.start} exit=${s.lastShift.exit}${s.lastShift.skipped ? ` skipped=${s.lastShift.skipped}` : ""}` : "无记录"}`,
       );
       return 0;
     }

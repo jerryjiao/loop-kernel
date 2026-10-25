@@ -180,6 +180,28 @@ test("可选参数：appendSystemPrompt / disallowedTools / settings 进参数�
   await p;
 });
 
+test("json.result 里的 key 抹成 <KEY>；key 为空串或不是字符串时不抹", async () => {
+  const log = [];
+  const children = [];
+  const exec = claudeCode({ env, configDir: tempDir(), spawnFn: recordingSpawn(log, children) });
+  const p = exec.run({ cwd: "/w", prompt: "干活", sessionId: "sid", timeoutMs: 60_000, shift: "dawn" });
+  await tick();
+  finish(children[0], { stdout: `${JSON.stringify({ session_id: "s1", result: `回显了 ${CREDS.key} 一段`, note: CREDS.key })}\n` });
+  const r = await p;
+  assert.equal(r.json.result, "回显了 <KEY> 一段");
+  assert.equal(r.json.note, CREDS.key, "只抹 result，别的字符串字段不动");
+  assert.equal(JSON.stringify(r.json).split(CREDS.key).length - 1, 1);
+
+  for (const key of ["", 0]) {
+    const kids = [];
+    const exec2 = claudeCode({ env: async () => ({ ...CREDS, key }), configDir: tempDir(), spawnFn: recordingSpawn([], kids) });
+    const p2 = exec2.run({ cwd: "/w", prompt: "干活", sessionId: "sid", timeoutMs: 60_000, shift: "dawn" });
+    await tick();
+    finish(kids[0], { stdout: `${JSON.stringify({ result: "原文不动" })}\n` });
+    assert.equal((await p2).json.result, "原文不动");
+  }
+});
+
 test("不传 sessionId 就不带 --session-id 参数", async () => {
   const log = [];
   const children = [];

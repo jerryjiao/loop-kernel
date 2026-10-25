@@ -207,15 +207,21 @@ test("loopStatus：已装与否看 launchctl print，下次触发（下个整点
   assert.deepEqual(s.agents.map((a) => a.nextFire), ["2026-10-17 11:00", "2026-10-17 11:00"]);
   assert.equal(s.lastShift.shift, "dawn");
   assert.equal(s.lastShift.searches, 2);
+  assert.equal(s.shiftName("dawn"), "早班");
+  assert.equal(s.shiftName("没登记"), "没登记", "配置里没有的班号回退编号");
 });
 
 test("main：on/off/status 返回 0，未知命令返回 1，status 有人话输出", async () => {
   const lines = [];
   const base = makeDeps({ logFn: (...args) => lines.push(args.join(" ")) });
+  const dayDir = join(base.root, "loop", "days", "2026-10-17");
+  mkdirSync(dayDir, { recursive: true });
+  writeFileSync(join(dayDir, "shifts.jsonl"), `${JSON.stringify({ shift: "dawn", start: "2026-10-16T18:00:00.000Z", exit: 0 })}
+`);
   assert.equal(await main(["on"], base.deps), 0);
   assert.equal(await main(["status"], base.deps), 0);
   assert.ok(lines.some((l) => l.includes("com.example.kern-test.task.main")));
-  assert.ok(lines.some((l) => l.includes("最近一班")));
+  assert.ok(lines.some((l) => l.includes("最近一班：早班 ")), "用配置里的班名，不拼「编号 班」");
   assert.equal(await main(["off"], base.deps), 0);
   assert.equal(await main(["nonsense"], base.deps), 1);
 });

@@ -92,17 +92,20 @@ export function claudeCode(opts = {}) {
         const timer = setTimeout(() => { timedOut = true; child.kill("SIGTERM"); }, timeoutMs);
         const finish = (v) => { if (!settled) { settled = true; clearTimeout(timer); done(v); } };
         // claude 没装等 spawn 失败只触发 error 不触发 close，两路都兜住。
+        // key 为空串或不是字符串时不抹（没有可识别的凭据串）。
+        const keys = typeof creds.key === "string" && creds.key ? [creds.key] : [];
         child.on("error", (err) =>
-          finish({ code: -1, json: null, stderr: redact(stderr + String(err), [creds.key]), timedOut, row: { searches: null } }));
+          finish({ code: -1, json: null, stderr: redact(stderr + String(err), keys), timedOut, row: { searches: null } }));
         child.on("close", (code) => {
           let json = null;
           try { json = JSON.parse(stdout); } catch { /* 非 JSON 输出按失败处理 */ }
           const sid = (typeof json?.session_id === "string" && json.session_id) || sessionId || null;
+          if (json && typeof json.result === "string" && keys.length) json = { ...json, result: redact(json.result, keys) };
           finish({
             code,
             timedOut,
             json,
-            stderr: redact(stderr, [creds.key]),
+            stderr: redact(stderr, keys),
             row: { searches: countWebSearches(opts.configDir, cwd, sid) },
           });
         });
